@@ -14,62 +14,50 @@ public class MainActivity extends AppCompatActivity {
     private static int userOverallScore = ZERO;
     private static int computerOverallScore = ZERO;
     private static int turnScore = 0;
-
+    private Button rollButton;
+    private Button holdButton;
+    private Button resetButton;
+    private ImageView dice;
+    private TextView userOverallScoreText;
+    private TextView computerOverallScoreText;
+    private TextView turnScoreText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final Button roll = findViewById(R.id.roll);
-        final Button hold = findViewById(R.id.hold);
-        final Button reset = findViewById(R.id.reset);
-        final ImageView dice = findViewById(R.id.dice);
-        final TextView userOverallScoreText = findViewById(R.id.userOverallScore);
-        final TextView computerOverallScoreText = findViewById(R.id.computerOverallScore);
-        final TextView turnScoreText = findViewById(R.id.turnScoreText);
+        rollButton = findViewById(R.id.roll);
+        holdButton = findViewById(R.id.hold);
+        resetButton = findViewById(R.id.reset);
+        dice = findViewById(R.id.dice);
+        userOverallScoreText = findViewById(R.id.userOverallScore);
+        computerOverallScoreText = findViewById(R.id.computerOverallScore);
+        turnScoreText = findViewById(R.id.turnScoreText);
 
-        roll.setOnClickListener(new View.OnClickListener() {
+        rollButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int rollValue = roll();
-                Log.e("**role", Integer.toString(rollValue));
-                String diceImage = "dice"+Integer.toString(rollValue);
-                Log.e("dice image", diceImage);
-
-
-                int diceImageResource = getResources().
-                        getIdentifier(diceImage,
-                                "drawable", getPackageName());
-
-
-
-                dice.setImageResource(diceImageResource);
-
-
-                if (rollValue != 1) {
-                    turnScore += rollValue;
-
-                    Log.e("Turn score: " , Integer.toString(turnScore));
-                    turnScoreText.setText("Your turn score: " + Integer.toString(turnScore));
-
-                }
-
-                Log.e("***score", "turnScore: " + turnScore +"\noverallScore: "+userOverallScore);
+                roll('h');
             }
         });
 
-        hold.setOnClickListener(new View.OnClickListener() {
+        holdButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 userOverallScore += turnScore;
                 userOverallScoreText.setText(Integer.toString(userOverallScore));
 
                 turnScore = 0;
+                turnScoreText.setText("Turn Score: "+ turnScore);
+
+                computerTurn();
+
+
             }
         });
 
-        reset.setOnClickListener(new View.OnClickListener(){
+        resetButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 userOverallScore = ZERO;
@@ -87,9 +75,61 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public int roll() {
+    private int roll(char player) {
         int r = (int) (Math.random() * 6) + 1;
-        return r;
+
+        int rollValue = r;
+        Log.e("**role", Integer.toString(rollValue));
+        String diceImage = "dice"+Integer.toString(rollValue);
+        Log.e("dice image", diceImage);
+
+
+        int diceImageResource = getResources().
+                getIdentifier(diceImage,
+                        "drawable", getPackageName());
+
+
+        dice.setImageResource(diceImageResource);
+
+
+        if (rollValue != 1) {
+            turnScore += rollValue;
+
+            Log.e("Turn score: " , Integer.toString(turnScore));
+            turnScoreText.setText("Turn score: " + Integer.toString(turnScore));
+
+        } else {
+            turnScore = 0;
+            if (player == 'h') {
+                computerTurn();
+            }
+
+
+        }
+
+        Log.e("***score", "turnScore: " + turnScore +"\noverallScore: "+userOverallScore);
+        return turnScore;
 
     }
+
+    private void computerTurn() {
+        rollButton.setEnabled(false);
+        holdButton.setEnabled(false);
+
+        boolean continueTurn = true;
+        double r = Math.random();
+        while (continueTurn) {
+            int scoreAdded = roll('c');
+            if (!(scoreAdded != 0 && r > .5)) {
+                continueTurn = false;
+            }
+
+        }
+
+        turnScoreText.setText(Integer.toString(turnScore));
+        holdButton.setEnabled(true);
+        rollButton.setEnabled(true);
+
+    }
+
 }
