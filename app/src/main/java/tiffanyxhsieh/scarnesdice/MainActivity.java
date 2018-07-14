@@ -9,6 +9,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Timer;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int ZERO = 0;
@@ -22,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView userOverallScoreText;
     private TextView computerOverallScoreText;
     private TextView turnScoreText;
+    Timer timer = new Timer();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 turnScore = 0;
                 turnScoreText.setText("Turn Score: "+ turnScore);
 
-                computerTurn();
+                computerTurn(true);
 
 
             }
@@ -76,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private int roll(char player) {
+    private void roll(char player) {
         int r = (int) (Math.random() * 6) + 1;
 
         int rollValue = r;
@@ -89,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
                 getIdentifier(diceImage,
                         "drawable", getPackageName());
 
-
         dice.setImageResource(diceImageResource);
 
 
@@ -100,39 +102,44 @@ public class MainActivity extends AppCompatActivity {
             turnScoreText.setText("Turn score: " + Integer.toString(turnScore));
 
         } else {
+            //A "1" was rolled, end turn, set turnScore to 0
             turnScore = 0;
+            turnScoreText.setText(Integer.toString(turnScore));
             if (player == 'h') {
-                Toast.makeText(getApplicationContext(),"1 Rolled. End of Turn", Toast.LENGTH_LONG);
-                computerTurn();
+                //if it was the human player's turn, start the computer's turn
+                Toast.makeText(getApplicationContext(),"1 Rolled. End of Turn", Toast.LENGTH_LONG).show();
+
+                computerTurn(true);
+            } else if (player == 'c') {
+                computerTurn(false);
             }
 
-            return turnScore;
 
 
         }
 
-        Log.e("***score", "turnScore: " + turnScore +"\noverallScore: "+userOverallScore);
-        return turnScore;
 
     }
 
-    private void computerTurn() {
+    private void computerTurn(boolean continueTurn) {
+        //disable buttons so human player can't play
         rollButton.setEnabled(false);
         holdButton.setEnabled(false);
 
-        Toast.makeText(getApplicationContext(),"Computer Turn", Toast.LENGTH_LONG);
+        Toast.makeText(getApplicationContext(),"Computer Turn", Toast.LENGTH_LONG).show();
 
-        boolean continueTurn = true;
+        //computer keeps rolling as long as it doesn't roll a "1", and Math.random < .2
         double r = Math.random();
         while (continueTurn) {
-            int scoreAdded = roll('c');
-            if (!(scoreAdded != 0 && r > .2)) {
+            roll('c');
+            if (r < .1) {
                 continueTurn = false;
                 turnScoreText.setText("Computer Hold");
             }
 
         }
 
+        //update computer overall score and enable buttons for human player's turn
         computerOverallScore += turnScore;
         computerOverallScoreText.setText(Integer.toString(computerOverallScore));
         holdButton.setEnabled(true);
