@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -101,8 +102,11 @@ public class MainActivity extends AppCompatActivity {
         } else {
             turnScore = 0;
             if (player == 'h') {
+                Toast.makeText(getApplicationContext(),"1 Rolled. End of Turn", Toast.LENGTH_LONG);
                 computerTurn();
             }
+
+            return turnScore;
 
 
         }
@@ -116,17 +120,21 @@ public class MainActivity extends AppCompatActivity {
         rollButton.setEnabled(false);
         holdButton.setEnabled(false);
 
+        Toast.makeText(getApplicationContext(),"Computer Turn", Toast.LENGTH_LONG);
+
         boolean continueTurn = true;
         double r = Math.random();
         while (continueTurn) {
             int scoreAdded = roll('c');
-            if (!(scoreAdded != 0 && r > .5)) {
+            if (!(scoreAdded != 0 && r > .2)) {
                 continueTurn = false;
+                turnScoreText.setText("Computer Hold");
             }
 
         }
 
-        turnScoreText.setText(Integer.toString(turnScore));
+        computerOverallScore += turnScore;
+        computerOverallScoreText.setText(Integer.toString(computerOverallScore));
         holdButton.setEnabled(true);
         rollButton.setEnabled(true);
 
