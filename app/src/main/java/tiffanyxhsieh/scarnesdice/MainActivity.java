@@ -1,5 +1,6 @@
 package tiffanyxhsieh.scarnesdice;
 
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,7 +25,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView userOverallScoreText;
     private TextView computerOverallScoreText;
     private TextView turnScoreText;
-    Timer timer = new Timer();
+    private TextView computerMove;
+    final Handler handler = new Handler();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,10 +41,13 @@ public class MainActivity extends AppCompatActivity {
         userOverallScoreText = findViewById(R.id.userOverallScore);
         computerOverallScoreText = findViewById(R.id.computerOverallScore);
         turnScoreText = findViewById(R.id.turnScoreText);
+        computerMove = findViewById(R.id.computerMove);
+
 
         rollButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                computerMove.setText("");
                 roll('h');
             }
         });
@@ -49,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         holdButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                computerMove.setText("");
                 userOverallScore += turnScore;
                 userOverallScoreText.setText(Integer.toString(userOverallScore));
 
@@ -64,14 +71,8 @@ public class MainActivity extends AppCompatActivity {
         resetButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-                userOverallScore = ZERO;
-                computerOverallScore = ZERO;
-                turnScore = ZERO;
 
-                userOverallScoreText.setText(Integer.toString(userOverallScore));
-                computerOverallScoreText.setText(Integer.toString(computerOverallScore));
-                turnScoreText.setText(Integer.toString(turnScore));
-
+            resetScores();
 
             }
         });
@@ -79,13 +80,21 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void resetScores() {
+        userOverallScore = ZERO;
+        computerOverallScore = ZERO;
+        turnScore = ZERO;
+
+        userOverallScoreText.setText(Integer.toString(userOverallScore));
+        computerOverallScoreText.setText(Integer.toString(computerOverallScore));
+        turnScoreText.setText(Integer.toString(turnScore));
+    }
+
     private void roll(char player) {
         int r = (int) (Math.random() * 6) + 1;
 
         int rollValue = r;
-        Log.e("**role", Integer.toString(rollValue));
         String diceImage = "dice"+Integer.toString(rollValue);
-        Log.e("dice image", diceImage);
 
 
         int diceImageResource = getResources().
@@ -96,9 +105,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (rollValue != 1) {
+            //NOT "1", was rolled, add this value to the turnScore
             turnScore += rollValue;
 
-            Log.e("Turn score: " , Integer.toString(turnScore));
             turnScoreText.setText("Turn score: " + Integer.toString(turnScore));
 
         } else {
@@ -126,22 +135,37 @@ public class MainActivity extends AppCompatActivity {
         rollButton.setEnabled(false);
         holdButton.setEnabled(false);
 
-        Toast.makeText(getApplicationContext(),"Computer Turn", Toast.LENGTH_LONG).show();
 
         //computer keeps rolling as long as it doesn't roll a "1", and Math.random < .2
-        double r = Math.random();
+
         while (continueTurn) {
-            roll('c');
-            if (r < .1) {
+            double r = Math.random();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    roll('c');
+
+                }
+            }, 1000);
+
+
+            if (r < .4) {
                 continueTurn = false;
-                turnScoreText.setText("Computer Hold");
+                computerMove.setText("Computer has decided to Hold");
+                Log.e("turnScore: ", Integer.toString(turnScore));
+            } else {
+                computerMove.setText("Computer is rolling");
             }
 
         }
-
+        //computer stops rolling
         //update computer overall score and enable buttons for human player's turn
         computerOverallScore += turnScore;
+        Log.e("computerScore : ", Integer.toString(computerOverallScore));
         computerOverallScoreText.setText(Integer.toString(computerOverallScore));
+        turnScore = 0;
+        turnScoreText.setText(Integer.toString(turnScore));
+
         holdButton.setEnabled(true);
         rollButton.setEnabled(true);
 
